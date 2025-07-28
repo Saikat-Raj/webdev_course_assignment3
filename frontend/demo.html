@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment 3 - Chat Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .user-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .message-bubble {
+            max-width: 70%;
+            margin-bottom: 1rem;
+        }
+        .message-sent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 5px 20px;
+        }
+        .message-received {
+            background: #f8f9fa;
+            border-radius: 20px 20px 20px 5px;
+        }
+        .chat-input {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+        }
+        .btn-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+        }
+        .offline-demo {
+            background: linear-gradient(135deg, #ff9a56 0%, #ffad56 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Demo Warning -->
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="offline-demo text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Demo Mode:</strong> This is a static demo. For full functionality, please run the React application and Flask backend.
+                </div>
+            </div>
+        </div>
+
+        <!-- User Selection Demo -->
+        <div id="userSelection" class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card shadow-lg" style="border-radius: 20px; border: none;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <h1 class="h2 fw-bold text-dark mb-2">Assignment 3 - Chat Application</h1>
+                            <p class="text-muted">Select a user to start chatting</p>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Patient User -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 user-card" onclick="selectUser('patient')" style="border-radius: 15px; border: 2px solid #e9ecef;">
+                                    <div class="card-body text-center p-4">
+                                        <div class="mb-3">
+                                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                                                <i class="fas fa-user fa-2x"></i>
+                                            </div>
+                                        </div>
+                                        <h5 class="card-title fw-bold">John Patient</h5>
+                                        <p class="card-text text-muted mb-3">patient@example.com</p>
+                                        <span class="badge bg-success px-3 py-2" style="border-radius: 20px;">PATIENT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Doctor User -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 user-card" onclick="selectUser('doctor')" style="border-radius: 15px; border: 2px solid #e9ecef;">
+                                    <div class="card-body text-center p-4">
+                                        <div class="mb-3">
+                                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: linear-gradient(135deg, #007bff 0%, #6610f2 100%); color: white;">
+                                                <i class="fas fa-user-md fa-2x"></i>
+                                            </div>
+                                        </div>
+                                        <h5 class="card-title fw-bold">Dr. Sarah Doctor</h5>
+                                        <p class="card-text text-muted mb-3">doctor@example.com</p>
+                                        <span class="badge bg-primary px-3 py-2" style="border-radius: 20px;">DOCTOR</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <p class="small text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                This is a simplified chat application for educational purposes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface Demo -->
+        <div id="chatInterface" class="chat-container" style="display: none;">
+            <div class="card" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <!-- Chat Header -->
+                <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 20px 20px 0 0; border: none; padding: 1.5rem;">
+                    <button class="btn btn-outline-secondary me-3" onclick="goBack()">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </button>
+                    <div class="rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <i id="otherUserIcon" class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 id="currentUserName" class="mb-1 fw-bold text-dark">Chat Interface</h5>
+                        <small id="userRole" class="text-success">Demo Mode</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">
+                            <i class="fas fa-circle text-warning me-1"></i>Demo
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="card-body" style="height: 400px; overflow-y: auto; padding: 2rem;">
+                    <div id="messagesContainer">
+                        <!-- Demo messages will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer" style="background: white; border-radius: 0 0 20px 20px; border: none; padding: 1.5rem;">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control chat-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                        <button type="button" class="btn text-white btn-send" onclick="sendDemoMessage()">
+                            <i class="fas fa-paper-plane me-2"></i>Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let demoMessages = [];
+
+        const users = {
+            patient: {
+                name: "John Patient",
+                email: "patient@example.com",
+                role: "patient",
+                icon: "fa-user",
+                color: "linear-gradient(135deg, #28a745 0%, #20c997 100%)"
+            },
+            doctor: {
+                name: "Dr. Sarah Doctor", 
+                email: "doctor@example.com",
+                role: "doctor",
+                icon: "fa-user-md",
+                color: "linear-gradient(135deg, #007bff 0%, #6610f2 100%)"
+            }
+        };
+
+        function selectUser(userType) {
+            currentUser = userType;
+            document.getElementById('userSelection').style.display = 'none';
+            document.getElementById('chatInterface').style.display = 'block';
+            
+            const user = users[userType];
+            const otherUser = userType === 'patient' ? users.doctor : users.patient;
+            
+            document.getElementById('currentUserName').textContent = `Chat as ${user.name}`;
+            document.getElementById('userRole').textContent = `${user.role} • ${user.email}`;
+            document.getElementById('otherUserIcon').className = `fas ${otherUser.icon}`;
+            
+            // Initialize demo messages
+            initializeDemoMessages();
+        }
+
+        function goBack() {
+            document.getElementById('userSelection').style.display = 'block';
+            document.getElementById('chatInterface').style.display = 'none';
+            currentUser = null;
+            demoMessages = [];
+        }
+
+        function initializeDemoMessages() {
+            demoMessages = [
+                {
+                    sender: 'patient',
+                    message: 'Hello Doctor! I have some questions about my health.',
+                    timestamp: new Date(Date.now() - 300000) // 5 minutes ago
+                },
+                {
+                    sender: 'doctor',
+                    message: 'Hello John! I\'m here to help. What would you like to discuss?',
+                    timestamp: new Date(Date.now() - 240000) // 4 minutes ago
+                },
+                {
+                    sender: 'patient',
+                    message: 'I\'ve been experiencing some headaches lately. Should I be concerned?',
+                    timestamp: new Date(Date.now() - 180000) // 3 minutes ago
+                },
+                {
+                    sender: 'doctor',
+                    message: 'I understand your concern. Can you tell me more about the frequency and intensity of these headaches?',
+                    timestamp: new Date(Date.now() - 120000) // 2 minutes ago
+                }
+            ];
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            
+            demoMessages.forEach(msg => {
+                const isCurrentUser = msg.sender === currentUser;
+                const sender = users[msg.sender];
+                const otherUser = msg.sender === 'patient' ? users.doctor : users.patient;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `d-flex mb-4 ${isCurrentUser ? 'justify-content-end' : ''}`;
+                
+                messageDiv.innerHTML = `
+                    ${!isCurrentUser ? `
+                        <div class="rounded-circle me-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: ${sender.color}; color: white;">
+                            <i class="fas ${sender.icon}"></i>
+                        </div>
+                    ` : ''}
+                    <div class="p-3 rounded-3 ${isCurrentUser ? 'message-sent' : 'message-received'}" style="max-width: 70%;">
+                        <div class="d-flex align-items-center mb-1">
+                            <strong class="small ${isCurrentUser ? 'text-white' : 'text-primary'}">${sender.name}</strong>
+                            <small class="ms-2 ${isCurrentUser ? 'text-white-50' : 'text-muted'}">${formatTime(msg.timestamp)}</small>
+                        </div>
+                        <p class="mb-0">${msg.message}</p>
+                    </div>
+                    ${isCurrentUser ? `
+                        <div class="rounded-circle ms-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: ${sender.color}; color: white;">
+                            <i class="fas ${sender.icon}"></i>
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function formatTime(timestamp) {
+            return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function sendDemoMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentUser) return;
+            
+            demoMessages.push({
+                sender: currentUser,
+                message: message,
+                timestamp: new Date()
+            });
+            
+            input.value = '';
+            renderMessages();
+            
+            // Simulate response from other user after 2 seconds
+            setTimeout(() => {
+                const otherUser = currentUser === 'patient' ? 'doctor' : 'patient';
+                const responses = {
+                    doctor: [
+                        "Thank you for sharing that information.",
+                        "I understand. Let me help you with that.",
+                        "That's a good question. Here's what I recommend...",
+                        "Based on what you've told me, I suggest...",
+                        "Please continue. I'm listening."
+                    ],
+                    patient: [
+                        "Thank you for the explanation, Doctor.",
+                        "That makes sense. What should I do next?",
+                        "I appreciate your help with this.",
+                        "Should I schedule a follow-up appointment?",
+                        "Thank you for taking the time to answer my questions."
+                    ]
+                };
+                
+                const randomResponse = responses[otherUser][Math.floor(Math.random() * responses[otherUser].length)];
+                
+                demoMessages.push({
+                    sender: otherUser,
+                    message: randomResponse,
+                    timestamp: new Date()
+                });
+                
+                renderMessages();
+            }, 2000);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendDemoMessage();
+            }
+        }
+    </script>
+</body>
+</html>
